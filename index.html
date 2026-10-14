@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>VlmSpellchecker TinyMCE Plugin Demo</title>
+
+    <!-- TinyMCE -->
+    <script src="tinymce/js/tinymce/tinymce.min.js"></script>
+
+    <style>
+        body {
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+            max-width: 960px;
+            margin: 40px auto;
+            padding: 0 20px;
+            color: #222;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .note {
+            background: #f5f7fa;
+            border-left: 4px solid #3498db;
+            padding: 12px 16px;
+            margin: 20px 0;
+            font-size: 0.95rem;
+        }
+
+        code {
+            background: #eee;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+
+        #vlmspellchecker-status {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #666;
+        }
+
+            #vlmspellchecker-status.error {
+                color: #c0392b;
+            }
+
+            #vlmspellchecker-status.ready {
+                color: #27ae60;
+            }
+    </style>
+</head>
+
+<body>
+
+    <h1>VlmSpellchecker Dictionary – TinyMCE Plugin</h1>
+
+    <p>
+        Custom spell-checker plugin using
+        <a href="https://github.com/Veldin/wiki-language-models">
+            wiki-language-models
+        </a>.
+        <br>
+
+        Currently set up to use the
+        <code>
+            <a href="https://github.com/Veldin/wiki-language-models/releases/tag/veldin-language-model-nl-20261001">
+                vlmspellchecker-language-model-nl-20261001
+            </a>
+        </code>
+        dictionary compiled from the DUTCH wiki.
+    </p>
+
+    <div class="note">
+        <strong>How to use</strong>
+
+        <ul>
+            <li>
+                Click the <strong>VlmSpellchecker</strong> button in the toolbar
+                to run a spell check.
+            </li>
+
+            <li>
+                Unknown words get a red underline.
+            </li>
+            <li>
+                Uncommon words get an orange underline.
+            </li>
+
+            <li>
+                Right-click a marked word to see suggestions and replace it.
+            </li>
+        </ul>
+    </div>
+
+    <textarea id="editor">Dit is een testzin met een paar verkeerdd geschreven woorden.</textarea>
+
+    <div id="vlmspellchecker-status">
+        Loading TinyMCE + VlmSpellchecker...
+    </div>
+
+    <script>
+        const status = document.getElementById('vlmspellchecker-status');
+
+        function setStatus(message, type = '') {
+            status.textContent = message;
+            status.className = type;
+        }
+
+        if (typeof tinymce === 'undefined') {
+            setStatus('TinyMCE failed to load.', 'error');
+        } else {
+            tinymce.init({
+                selector: '#editor',
+                license_key: 'gpl',
+                height: 640,
+                menubar: 'file edit view insert format tools',
+                plugins: 'lists link autolink vlmspellchecker',
+                toolbar: 'undo redo | bold italic underline | bullist numlist | link | vlmspellcheckercheck',
+
+                external_plugins: {
+                    vlmspellchecker: 'https://veldin.com/vlm-spellchecker/VlmSpellcheckerPlugin.js'
+                },
+
+                vlmspellchecker_dictionary_url: './dictionary.vlm',
+                vlmspellchecker_dictionary_attribution:
+                    'The Demo Language model used is generated from Dutch Wikipedia data.\n' +
+                    'Read more about it here: https://github.com/Veldin/wiki-language-models',
+
+                vlmspellchecker_max_distance: 3,
+                vlmspellchecker_suggestion_candidate_range_min: 4,
+                vlmspellchecker_suggestion_candidate_range_max: 10,
+
+                contextmenu: 'link vlmspellchecker',
+
+                setup: function (editor) {
+                    editor.on('init', function () {
+                        setStatus('TinyMCE + VLM-spellchecker ready.', 'ready');
+                    });
+                }
+            }).catch(function (error) {
+                setStatus('TinyMCE initialization failed: ' + error.message, 'error');
+            });
+        }
+    </script>
+
+</body>
+</html>
